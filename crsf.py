@@ -17,8 +17,6 @@ For navigating inside the CRSF menu use keys: UP, DOWN, Q, ENTER, BACKSPACE.
 import sys, time, functools, os, curses
 import serial, socket, queue, threading
 
-TCP_HOST = '192.168.4.1'
-TCP_PORT = 60950                # this TCP port is used by Fusion
 
 ORIGIN_ADDR = "CRSF.FC_ADDR"
 
@@ -463,16 +461,20 @@ class TCPConnection(CRSFConnection):
 
     TCP_TIMEOUT_MS = 1000
     TCP_RECV = 2048
+    TCP_PORT = 60950                # this TCP port is used by Fusion
+    TCP_HOST = ''                   # can be'192.168.4.1'
 
-    def __init__(self, silent):
+    def __init__(self, silent, opts):
         self.parser = crsf_parser(silent)
         self.frames = []                # incoming frames that were already parsed
         self.silent = silent
 
         # Connect via TCP socket
+        self.TCP_PORT = opts['tcp-port']
+        self.TCP_HOST = opts['tcp-host']
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.settimeout(TCPConnection.TCP_TIMEOUT_MS)
-        self.socket.connect((TCP_HOST, TCP_PORT))
+        self.socket.connect((self.TCP_HOST, self.TCP_PORT))
 
     def read_crsf(self):
         # Receive data from serial
@@ -621,6 +623,8 @@ def parse_args():
                          help = 'CRSF menu mode (otherwise - logs mode)' )
     arg_parse.add_argument('--tcp-port', type=int, nargs='?', const=60960,
                         help = 'set TCP port or use 60950 by default')
+    arg_parse.add_argument('--tcp-host', type=str, nargs='?',
+                        help = 'set TCP host')
     # arg_parse.add_argument('--serial-port', type=str, nargs='?')
     arg_parse.add_argument('--test', action = 'store_true',
                          help = 'CRSF test mode (otherwise - logs mode)' )
@@ -631,7 +635,7 @@ def get_crsf_connection(mode, silent):
     if not silent:
         print('Connecting with {}...'.format('TCP' if mode.tcp else 'UART'))
     if mode.tcp:
-        return TCPConnection(silent)
+        return TCPConnection(silent, opts=mode)
     elif mode.test:
         return TestConnection(silent)
     else:
