@@ -20,8 +20,6 @@ import serial, socket, queue, threading
 
 ORIGIN_ADDR = "CRSF.FC_ADDR"
 
-SERIAL_PORT = 'COM8'
-SERIAL_BAUD = 416666
 # TODO: can also use WebSocket if Fusion is needed simultaneously
 
 TICK_SPEED = 20      # Ticks per microsecond (for LOG frames)
@@ -511,11 +509,14 @@ class SerialConnection(CRSFConnection):
     '''Class for exchanging CRSF over UART'''
 
     SERIAL_SLEEP = 0.001
-    SERIAL_BAUD = 416666
+    SERIAL_BAUD = 416666 
+    SERIAL_PORT = ''
 
-    def __init__(self, silent):
+    def __init__(self, silent, opt):
         self.parser = crsf_parser(silent)
-        self.serial = serial.Serial(SERIAL_PORT, baudrate=SERIAL_BAUD)
+        self.SERIAL_BAUD = opt['baud']
+        self.SERIAL_PORT = opt['serial-port']
+        self.serial = serial.Serial(self.SERIAL_PORT, baudrate=self.SERIAL_BAUD)
         self.in_queue = queue.Queue()
 
         # Receiving thread
@@ -625,7 +626,10 @@ def parse_args():
                         help = 'set TCP port or use 60950 by default')
     arg_parse.add_argument('--tcp-host', type=str, nargs='?',
                         help = 'set TCP host')
-    # arg_parse.add_argument('--serial-port', type=str, nargs='?')
+    arg_parse.add_argument('--serial-port', type=str, nargs='?', const='COM8',
+                        help = 'set serial port or use COM8 by default')
+    arg_parse.add_argument('--baud', type=int, nargs='?', const=416666,
+                        help = 'set serial baud or use 416666 by default')
     arg_parse.add_argument('--test', action = 'store_true',
                          help = 'CRSF test mode (otherwise - logs mode)' )
     opts = arg_parse.parse_args()
