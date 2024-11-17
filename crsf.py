@@ -509,6 +509,7 @@ class SerialConnection(CRSFConnection):
     '''Class for exchanging CRSF over UART'''
 
     SERIAL_SLEEP = 0.001
+    SERIAL_BAUD = 416666
 
     def __init__(self, silent):
         self.parser = crsf_parser(silent)
@@ -552,6 +553,9 @@ def parse_args():
                          help = 'use TCP connection instead of UART' )
     arg_parse.add_argument('--menu', action = 'store_true',
                          help = 'CRSF menu mode (otherwise - logs mode)' )
+    arg_parse.add_argument('--tcp-port', type=int, nargs='?', const=60960,
+                        help = 'set TCP port or use 60950 by default')
+    # arg_parse.add_argument('--serial-port', type=str, nargs='?')
     opts = arg_parse.parse_args()
     return opts
 
