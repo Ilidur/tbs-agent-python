@@ -9,7 +9,7 @@ It requires Python 3.4 or above to run.
 
 To install all the dependencies:
 ```
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 ## Usage
 To launch menu via UART:
